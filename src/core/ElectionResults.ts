@@ -23,7 +23,8 @@ export class ElectionResults {
 
 			for (let candidate of officialCandidates) {
 				const votes = votesMap.get(candidate.name) || 0;
-				if (votes) result.set(candidate.name, format((votes * 100) / validVotes));
+				const percentage = validVotes === 0 ? 0 : (votes * 100) / validVotes;
+				result.set(candidate.name, format(percentage));
 			}
 		} else {
 			const districts = this.voteCounter.getDistricts();
@@ -44,13 +45,17 @@ export class ElectionResults {
 				}
 			}
 
-			for (let [name, won] of wins.entries()) {
-				result.set(name, format((won * 100) / districtCount));
+			for (let candidate of officialCandidates) {
+				const won = wins.get(candidate.name) || 0;
+				const percentage = (won * 100) / districtCount;
+				result.set(candidate.name, format(percentage));
 			}
 		}
 
 		result.set("Blank", format((blankVotes * 100) / totalVotes));
 		result.set("Null", format((nullVotes * 100) / totalVotes));
+		result.set("Abstention", format((this.voteCounter.getAbstentions() * 100) / this.voteCounter.getRegisteredVoters()));
+
 		return result;
 	}
 }
